@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./app.css";
 import BlogItems from "./components/blogItems";
 import AddBlog from "./components/addBlog";
@@ -6,14 +6,32 @@ import AddBlog from "./components/addBlog";
 function App() {
   const [blogs, setBlogs] = useState([]);
 
-  const addNewBlog = (addBlog) => {
-    setBlogs([...blogs, addBlog]);
+  const fetchBlogs = async () => {
+    const blogsFromStorage = localStorage.getItem("blogs");
+    if (!blogsFromStorage) {
+      try {
+        const response = await fetch("/api/blogs");  // Corrected endpoint here
+        const data = await response.json();
+        setBlogs(data.blogs);  // Update to setBlogs(data.blogs);
+
+        // Store the updated data in localStorage
+        localStorage.setItem("blogs", JSON.stringify(data.blogs));
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    } else {
+      setBlogs(JSON.parse(blogsFromStorage));
+    }
   };
 
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
   return (
-    <div className="container">
-      <BlogItems blogs={blogs} /> {/* Pass the blogs state to BlogItems component */}
-      <AddBlog addNewBlog={addNewBlog} />
+    <div>
+      <BlogItems blogs={blogs} />
+      <AddBlog fetchBlogs={fetchBlogs} />
     </div>
   );
 }

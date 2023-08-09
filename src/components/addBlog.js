@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-const AddBlog = ({ addNewBlog }) => {
+const AddBlog = ({ fetchBlogs }) => {
   const [newBlog, setNewBlog] = useState({ title: "", body: "" });
 
-  const handleAddBlog = async () => {
+  const add = async (newBlog) => {
     try {
       const response = await fetch("/api/blogs/new", {
         method: "POST",
@@ -17,12 +17,18 @@ const AddBlog = ({ addNewBlog }) => {
         throw new Error("Error adding new blog");
       }
 
-      const createdBlog = await response.json();
-      addNewBlog(createdBlog.blog);
-      setNewBlog({ title: "", body: "" }); // Clear the newBlog state
+      const data = await response.json();
+      return data.blogs;
     } catch (error) {
       console.error("Error adding new blog:", error);
+      return [];
     }
+  };
+
+  const handleAddBlog = () => {
+   add(newBlog)
+   .then(() => { fetchBlogs()})
+    
   };
 
   return (
